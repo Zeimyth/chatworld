@@ -1,0 +1,20 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           com.zeimyth.controllers.client.ClientController.index
+
+# Connection-related requests
+POST    /connect                    com.zeimyth.controllers.api.ConnectionApiController.connect
+
+# Handle user input
+POST    /input                      com.zeimyth.controllers.api.InputController.handleInput
+POST    /echo                       com.zeimyth.controllers.api.InputController.echo
+POST    /say                        com.zeimyth.controllers.api.CommunicationApiController.say
+
+# Default Play index homepage
+GET     /play                       controllers.Application.index
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

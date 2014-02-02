@@ -1,0 +1,6 @@
+@(success: Boolean, content: Json.Value)
+
+{
+	"status": "@success",
+	"content": @content
+}

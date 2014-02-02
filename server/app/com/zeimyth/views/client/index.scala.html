@@ -1,0 +1,23 @@
+@()
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Chat Program</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("css/chat.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.10.2.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/chat.min.js")" type="text/javascript"></script>
+    </head>
+    <body>
+        <h1>Chat Program!</h1>
+        <div id="content">
+            <div id="display-content"></div>
+            <div id="input-content">
+                <textarea id="input">Text!</textarea>
+                <button id="submit" type="button">Send</button>
+            </div>
+        </div>
+    </body>
+</html>
