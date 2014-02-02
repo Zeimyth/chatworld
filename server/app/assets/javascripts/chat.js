@@ -1,4 +1,10 @@
 (function() {
+
+	var inherits = function(child, parent) {
+		child.prototype = Object.create(parent.prototype);
+		child.prototype.constructor = parent;
+	};
+
 	/**
 	 * Initializes a new chat client with the given message of the day and display function.
 	 *
@@ -8,7 +14,7 @@
 	var init = function(motd, display) {
 		display(motd);
 		display("It works!");
-	}
+	};
 
 	/**
 	 * Displays the given message to the user.
@@ -70,7 +76,7 @@
 		$(window).bind('beforeunload', function() {
 			send('', '/disconnect', function() {});
 		});
-	}
+	};
 
 	/**
 	 * Parses the user's input for commands and takes the appropriate action.
@@ -124,7 +130,7 @@
 			'type': 'POST',
 			'error': error
 		});
-	}
+	};
 
 	//-------------------------------------------------------------------------
 	// User Commands
@@ -166,8 +172,9 @@
 		}
 
 		Command.call(this, regex, action, regex);
-		this.__proto__ = Command.prototype;
+		// this.__proto__ = Command.prototype;
 	};
+	inherits(Say, Command);
 
 	var commands = {
 		'say': new Say()
