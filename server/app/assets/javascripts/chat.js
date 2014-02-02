@@ -151,15 +151,15 @@
 
 	var Say = function() {
 		/*
-		 * (?:          non-capturing group
-		 *   "|(?:say)  quotation mark or "say"
-		 * )            end non-capturing group
-		 * \s+          one or more whitespace characters
-		 * (            group 1
-		 *   .*         one or more of any character
-		 * )            end group 1 - message the user is saying
+		 * (?:            non-capturing group
+		 *   "|(?:say\s)  quotation mark or "say" followed by whitespace
+		 * )              end non-capturing group
+		 * \s*            one or more whitespace characters
+		 * (              group 1
+		 *   .*           one or more of any character
+		 * )              end group 1 - message the user is saying
 		 */
-		var regex = /^(?:"|(?:say))\s+(.*)/i
+		var regex = /^(?:"|(?:say\s))\s*(.*)/i
 		var action = function(text) {
 			// NOTE: Needs to check logged in status first?
 			send(text, '/say');
