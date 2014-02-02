@@ -14,18 +14,18 @@ object ConnectionApiController extends Controller {
 	}
 
 	def disconnect = Action { implicit request =>
-		Ok()
+		Ok("")
 	}
 
 	def login = Action(parse.json) { implicit request =>
-
+		Ok("")
 	}
 
 	def logout = Action(parse.json) { implicit request =>
-
+		Ok("")
 	}
 
 	def create = Action(parse.json) { implicit request =>
-
+		Ok("")
 	}
 }
