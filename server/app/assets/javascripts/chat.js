@@ -74,7 +74,10 @@
 		});
 
 		$(window).bind('beforeunload', function() {
-			send('', '/disconnect', function() {});
+			$.ajax('/disconnect', {
+				async: false,
+				'type': 'POST'
+			});
 		});
 	};
 
@@ -172,7 +175,6 @@
 		}
 
 		Command.call(this, regex, action, regex);
-		// this.__proto__ = Command.prototype;
 	};
 	inherits(Say, Command);
 

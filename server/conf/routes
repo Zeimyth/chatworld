@@ -7,6 +7,10 @@ GET     /                           com.zeimyth.controllers.client.ClientControl
 
 # Connection-related requests
 POST    /connect                    com.zeimyth.controllers.api.ConnectionApiController.connect
+POST    /create                     com.zeimyth.controllers.api.ConnectionApiController.create
+POST    /login                      com.zeimyth.controllers.api.ConnectionApiController.login
+POST    /logout                     com.zeimyth.controllers.api.ConnectionApiController.logout
+POST    /disconnect                 com.zeimyth.controllers.api.ConnectionApiController.disconnect
 
 # Handle user input
 POST    /input                      com.zeimyth.controllers.api.InputController.handleInput

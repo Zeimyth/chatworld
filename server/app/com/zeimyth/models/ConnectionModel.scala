@@ -85,4 +85,16 @@ object ConnectionModel {
 			case e: NoSuchElementException => None
 		}
 	}
+
+	def closeConnection(id: Long) {
+		getConnection(id) match {
+			case Some(connection) =>
+				connectionMap -= id
+				connection.userId match {
+					case Some(userId) => // Log out the user? Put in a detatched state?
+					case None =>
+				}
+			case None =>
+		}
+	}
 }
