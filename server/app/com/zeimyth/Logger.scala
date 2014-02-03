@@ -6,6 +6,15 @@ object Logger {
 	val INFO = 2
 	val WARN = 3
 	val ERROR = 4
+
+	def levelToString(level: Int) = level match {
+		case TRACE => "trace"
+		case DEBUG => "debug"
+		case INFO => "info"
+		case WARN => "warn"
+		case ERROR => "error"
+		case _ => ""
+	}
 }
 
 class Logger[A](classVal: Class[A], val level: Int = Logger.DEBUG) {
@@ -33,7 +42,7 @@ class Logger[A](classVal: Class[A], val level: Int = Logger.DEBUG) {
 
 	private def display(messageLevel: Int, message: String) {
 		if (messageLevel >= level) {
-			println(message)
+			println("[" + Logger.levelToString(messageLevel) + "] " + className + ": " + message)
 		}
 	}
 }
