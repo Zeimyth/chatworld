@@ -1,14 +1,27 @@
 package com.zeimyth.controllers.api
 
+import com.zeimyth.models.AccountModel
 import com.zeimyth.models.ConnectionModel
+import com.zeimyth.models.UserInfo
 
-import play.api.libs.json.Json
+import play.api.data._
+import play.api.data.Forms._
 import play.api.mvc._
+
+import play.api.Play
 
 import play.Logger
 
 object ConnectionApiController extends Controller {
-	val motd = "This is the message of the day."
+
+	val userForm = Form(
+		mapping(
+			"name" -> nonEmptyText,
+			"password" -> nonEmptyText
+		)(UserInfo.apply)(UserInfo.unapply)
+	)
+
+	val motd = Play.current.configuration.getString("motd").get
 
 	def connect = Action { implicit request =>
 		val id = ConnectionModel.newConnection()
@@ -18,7 +31,7 @@ object ConnectionApiController extends Controller {
 	}
 
 	def disconnect = Action { implicit request =>
-		val id = 0L;
+		val id = 0L
 		Logger.trace("Received disconnect from " + id)
 		ConnectionModel.closeConnection(id)
 
@@ -26,8 +39,18 @@ object ConnectionApiController extends Controller {
 	}
 
 	def login = Action(parse.json) { implicit request =>
-		Logger.trace("Received login from " + request.remoteAddress)
-		Ok("")
+		userForm.bindFromRequest.fold(
+			formWithErrors => {
+				Logger.trace("Received malformed login request from " + request.remoteAddress)
+				BadRequest("")
+			},
+			user => {
+				Logger.trace("Received login from " + request.remoteAddress + ": (" + user.username + ", " + user.password + ")")
+
+				Ok("")
+			}
+		)
+
 	}
 
 	def logout = Action { implicit request =>
@@ -36,7 +59,22 @@ object ConnectionApiController extends Controller {
 	}
 
 	def create = Action(parse.json) { implicit request =>
-		Logger.trace("Received create from " + request.remoteAddress)
-		Ok("")
+		// TODO: Allow user creation properly. Handle creation pipeline. Allow client to create users
+		userForm.bindFromRequest.fold(
+			formWithErrors => {
+				Logger.trace("Received malformed create request from " + request.remoteAddress)
+				BadRequest("")
+			},
+			user => {
+				Logger.trace("Received login from " + request.remoteAddress + ": (" + user.username + ", " + user.password + ")")
+
+				if (AccountModel.newAccount(user.username, user.password).isDefined) {
+					Ok("")	
+				}
+				else {
+					BadRequest("")
+				}
+			}
+		)
 	}
 }

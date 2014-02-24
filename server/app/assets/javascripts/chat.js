@@ -87,8 +87,11 @@
 	var parseInput = function(input) {
 
 		var parseLineOfInput = function(line) {
-			if (commands.say.test(line)) {
-				commands.say.parse(line);
+			if (commands['say'].test(line)) {
+				commands['say'].parse(line);
+			}
+			else if (commands['login'].test(line)) {
+				commands['login'].parse(line);
 			}
 			else {
 				send(line);
@@ -101,29 +104,33 @@
 	/**
 	 * Helper function for sending input to the server.
 	 *
-	 * @param {string=} content The message to send to the server
+	 * @param {string|Object?} content The message to send to the server
 	 * @param {string=} url The url to send the message to
-	 * @param {function(Object)} success Function to call on the json content returned by
+	 * @param {function(Object)=} success Function to call on the json content returned by
 	 *	the server
-	 * @param {function} error Function to call when an error occurs
+	 * @param {function=} error Function to call when an error occurs
 	 */
 	var send = function(content, url, success, error) {
 		if (!content && !url) {
 			return;
 		}
 
-		content = content || null;
+		// content = content || null;
+		if (typeof content == 'string') {
+			content = {'text': content};
+		}
+
 		url = url || '/echo';
 		success = success || function(content) {
-			display(content['message']);
+			display(content['message'], content['status']);
 		}
-		error = error || function() {
-			display('An error occurred during connection!', 'error');
+		error = error || function(xhr, text, e) {
+			display('An error occurred during connection! ' + e, 'error');
 		}
 
 		$.ajax(url, {
 			'contentType': 'application/json; charset=UTF-8',
-			'data': JSON.stringify({'text': content}),
+			'data': JSON.stringify(content),
 			'dataType': 'json',
 			'success': function(data) {
 				if (data.status == 'success') {
@@ -178,8 +185,25 @@
 	};
 	inherits(Say, Command);
 
+	var Login = function() {
+		/*
+		 * login\s+       "login" followed by whitespace
+		 * (\w+)\s+       username followed by whitespace
+		 * (\w+)          password
+		 */
+		var regex = /^login\s+(\w+)\s+(\w+)/i
+		var action = function(username, password) {
+			// NOTE: Encode password
+			send({'name': username, 'password': password}, '/login');
+		}
+
+		Command.call(this, regex, action, regex);
+	}
+	inherits(Login, Command);
+
 	var commands = {
-		'say': new Say()
+		'say': new Say(),
+		'login': new Login()
 	};
 
 	$(function() {

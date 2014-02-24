@@ -16,8 +16,16 @@ case class Connection(
 	id: Long,
 	created: Date,
 	lastCommunication: Date,
-	userId: Option[Long]
-)
+	userId: Option[Long]) {
+
+	def copy(id: Long = id,
+			created: Date = created,
+			lastCommunication: Date = lastCommunication, 
+			userId: Option[Long] = userId) = {
+
+		Connection(id, created, lastCommunication, userId)
+	}
+}
 
 object ConnectionModel {
 
@@ -83,6 +91,27 @@ object ConnectionModel {
 		}
 		catch {
 			case e: NoSuchElementException => None
+		}
+	}
+
+	def getConnectionUserId(id: Long): Option[Long] = {
+		getConnection(id) match {
+			case Some(connection) => connection.userId
+			case None => None
+		}
+	}
+
+	def addUserIdToConnection(id: Long, userId: Long) {
+		getConnection(id) match {
+			case Some(connection) => connection.userId match {
+				case Some(currentUserId) => if (currentUserId != userId) {
+					throw new IllegalStateException("Connection " + id +
+							" is already associated with userId " + currentUserId)
+				}
+				case None => connectionMap += (id -> connection.copy(userId = Some(userId)))
+			}
+			case None => throw new NoSuchElementException(
+					"Connection " + id + " does not exist in the database")
 		}
 	}
 
