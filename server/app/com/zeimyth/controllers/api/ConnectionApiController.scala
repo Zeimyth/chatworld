@@ -1,5 +1,6 @@
 package com.zeimyth.controllers.api
 
+import com.zeimyth.controllers.ChatController
 import com.zeimyth.models.AccountModel
 import com.zeimyth.models.ConnectionModel
 import com.zeimyth.models.UserInfo
@@ -11,8 +12,10 @@ import play.api.mvc._
 import play.api.Play
 
 import play.Logger
+import play.api.libs.json.JsValue
+import com.zeimyth.views.api.json.Message
 
-object ConnectionApiController extends Controller {
+object ConnectionApiController extends ChatController {
 
 	val userForm = Form(
 		mapping(
@@ -42,10 +45,16 @@ object ConnectionApiController extends Controller {
 		userForm.bindFromRequest.fold(
 			formWithErrors => {
 				Logger.trace("Received malformed login request from " + request.remoteAddress)
-				BadRequest("")
+				BadRequest("login usage info (TEMP)")
 			},
 			user => {
-				Logger.trace("Received login from " + request.remoteAddress + ": (" + user.username + ", " + user.password + ")")
+				val id = request.cookies.get("connectionId") match {
+					case Some(cookie) => cookie.value.toLong
+					case None => -1L
+				}
+
+				Logger.trace("Received login from " + request.remoteAddress + " (" + id + "): (" + user.username + ", " +
+					user.password + ")")
 
 				Ok("")
 			}
@@ -58,23 +67,27 @@ object ConnectionApiController extends Controller {
 		Ok("")
 	}
 
-	def create = Action(parse.json) { implicit request =>
-		// TODO: Allow user creation properly. Handle creation pipeline. Allow client to create users
-		userForm.bindFromRequest.fold(
-			formWithErrors => {
-				Logger.trace("Received malformed create request from " + request.remoteAddress)
-				BadRequest("")
-			},
-			user => {
-				Logger.trace("Received login from " + request.remoteAddress + ": (" + user.username + ", " + user.password + ")")
+	def create = Action(parse.json) (
+		withConnection[JsValue] { request =>
+			userForm.bindFromRequest()(request.getRequest).fold(
+				formWithErrors => {
+					Logger.trace("Received malformed create request from " + request.remoteAddress + ", reason: " +
+						formWithErrors.errors)
+					BadRequest("create usage info (TEMP)")
+				},
+				user => {
+					Logger.trace("Received create request from " + request.info + ": (" + user.username + ", " + user.password +
+						")")
 
-				if (AccountModel.newAccount(user.username, user.password).isDefined) {
-					Ok("")	
+					if (AccountModel.newAccount(user.username, user.password).isDefined) {
+						Ok(Message("Account " + user.username + " created (TEMP)"))
+					}
+					else {
+						Logger.trace("An error occurred during account creation")
+						BadRequest(Message("username in use or password invalid (TEMP)"))
+					}
 				}
-				else {
-					BadRequest("")
-				}
-			}
-		)
-	}
+			)
+		}
+	)
 }

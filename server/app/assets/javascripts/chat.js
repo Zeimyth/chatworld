@@ -90,6 +90,9 @@
 			if (commands['say'].test(line)) {
 				commands['say'].parse(line);
 			}
+			else if (commands['create'].test(line)) {
+				commands['create'].parse(line);
+			}
 			else if (commands['login'].test(line)) {
 				commands['login'].parse(line);
 			}
@@ -185,13 +188,29 @@
 	};
 	inherits(Say, Command);
 
+	var Create = function() {
+		/*
+		 * create\s+      "create" followed by whitespace
+		 * (\w+)\s+       username followed by whitespace
+		 * (\w+)          password
+		 */
+		var regex = /^create\s+(\w+)\s+(\w+)$/i
+		var action = function(username, password) {
+			// NOTE: Encode password
+			send({'name': username, 'password': password}, '/create');
+		}
+
+		Command.call(this, regex, action, regex);
+	}
+	inherits(Create, Command);
+
 	var Login = function() {
 		/*
 		 * login\s+       "login" followed by whitespace
 		 * (\w+)\s+       username followed by whitespace
 		 * (\w+)          password
 		 */
-		var regex = /^login\s+(\w+)\s+(\w+)/i
+		var regex = /^login\s+(\w+)\s+(\w+)$/i
 		var action = function(username, password) {
 			// NOTE: Encode password
 			send({'name': username, 'password': password}, '/login');
@@ -203,6 +222,7 @@
 
 	var commands = {
 		'say': new Say(),
+		'create': new Create(),
 		'login': new Login()
 	};
 
