@@ -90,7 +90,7 @@
 					}
 					listenLoop();
 				},
-				function(errorMessage, type){
+				function(errorMessage, _, errorType) {
 					display("An error occurred during listen loop! " + errorMessage, "error");
 //					listenLoop();
 				}
@@ -144,8 +144,24 @@
 		success = success || function(content) {
 			display(content['message'], content['status']);
 		}
-		error = error || function(errorMessage, _) {
-			display(errorMessage, 'error');
+		error = error || function(errorMessage, errorClass) {
+			if (errorMessage) {
+				try {
+					var data = JSON.parse(errorMessage);
+				} catch (error) {
+					var data = null;
+				}
+				var message = data && data['content'] && data['content']['message'];
+				if (message) {
+					display(message, 'error');
+				}
+				else {
+					display(errorMessage, 'error');
+				}
+			}
+			else {
+				display(errorClass, 'error');
+			}
 		}
 
 		$.ajax(url, {
@@ -154,12 +170,12 @@
 			'dataType': 'json',
 			'success': function(data) {
 				if (data.status != 'failure') {
-					success(data.content);
+					success(data['content']);
 				}
 			},
 			'type': 'POST',
 			'error': function(xhr, text, e) {
-				error(xhr.resopnseText, e);
+				error(xhr.responseText, e);
 			}
 		});
 	};

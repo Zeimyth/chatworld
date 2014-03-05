@@ -64,7 +64,7 @@ object ConnectionApiController extends ChatController {
 	)
 
 	def logout = Action(parse.empty) (
-		withConnection { implicit request =>
+		withLogin { implicit request =>
 			Logger.trace("Received logout from " + request.info)
 			ConnectionModel.getUserIdByConnection(request.connectionId) match {
 				case Some(userId) => AccountModel.logout(userId)

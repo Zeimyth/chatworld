@@ -1,7 +1,8 @@
 package com.zeimyth.controllers
 
 import play.api.mvc.{Action, Result, Request, Controller}
-import com.zeimyth.models.{ConnectionModel, Connection}
+import com.zeimyth.models.{AccountModel, ConnectionModel, Connection}
+import com.zeimyth.views.api.json.Message
 
 trait ChatController extends Controller {
 	def withConnection(inner: CustomRequest => Result)(request: Request[_]): Result = {
@@ -13,5 +14,21 @@ trait ChatController extends Controller {
 				}
 			case None => Unauthorized("No connection id (TEMP)")
 		}
+	}
+
+	def withLogin(inner: CustomRequest => Result)(request: Request[_]): Result = {
+		withConnection { cRequest =>
+			cRequest.getConnection.userId match {
+				case Some(userId) =>
+					if (AccountModel.getAccount(userId).isDefined) {
+						inner(cRequest)
+					}
+					else {
+						Unauthorized(Message("Login verification error (TEMP)"))
+					}
+				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
+
+			}
+		}(request)
 	}
 }

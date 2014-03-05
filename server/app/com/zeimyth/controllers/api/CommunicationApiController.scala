@@ -30,7 +30,7 @@ object CommunicationApiController extends ChatController {
 //	)
 
 	def say = Action(parse.json) (
-		withConnection { implicit request =>
+		withLogin { implicit request =>
 			val input = inputForm.bindFromCustomRequest.get
 			Logger.trace("Received say from " + request.info + ": " + input.text)
 
@@ -40,6 +40,7 @@ object CommunicationApiController extends ChatController {
 	)
 
 	def listen = Action(parse.json) (
+//		withLogin { implicit request =>
 		withConnection { implicit request =>
 //			val request = listenRequestForm.bindFromCustomRequest.get
 			Logger.trace("Received listen request from " + request.info + ".")
