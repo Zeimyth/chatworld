@@ -1,6 +1,10 @@
 package com.zeimyth.models
 
+import com.zeimyth.utils.ListenManager
+import com.zeimyth.utils.MessageType._
+
 import java.util.Date
+
 import play.Logger
 
 case class Account(id: Long,
@@ -91,6 +95,9 @@ object AccountModel {
 
 		accountMap += (account.id -> account.copy(connectionId = Some(connection.id)))
 		ConnectionModel.addUserIdToConnection(connection.id, account.id)
+
+		ListenManager.addMessage(account.username + " wakes up.", account.id, Login)
+
 		true
 	}
 

@@ -7,6 +7,7 @@ import com.zeimyth.views.api.json.Default
 import play.api.libs.json._
 
 import scala.Some
+import play.Logger
 
 case class Message(content: String, source: Long, code: MessageType)
 case class Listener(id: Long, messageIdx: Long/*, messageBank: Long*/)
@@ -40,12 +41,15 @@ object ListenManager {
 	}
 
 	private def getNewMessages(listener: Listener) = {
+		Logger.trace("Get new messages for " + listener.id)
+		Logger.trace("Messages in bank: " + messageList.length + ", listener wants message " + listener.messageIdx)
 		val result = Json.toJson(messageList.view.zipWithIndex
-			.filter(messageWithIdx => messageWithIdx._2 >= listener.messageIdx)
+			.filter(messageWithIdx => messageWithIdx._2 >= listener.messageIdx && willSeeMessage(messageWithIdx._1, listener))
 			.map(messageWithIdx => messageToJs(messageWithIdx._1, listener.id))
 		)
 
 		listenerMap += (listener.id -> listener.copy(messageIdx = messageList.size))
+		purgeMessages
 		result
 	}
 
@@ -60,7 +64,22 @@ object ListenManager {
 				}
 
 				Json.toJson(Map("text" -> Json.toJson(pre + "\"" + message.content + "\""),
-												"type" -> Json.toJson(Say.toString)))
+				                "type" -> Json.toJson(Say.toString)))
+			case Login =>
+				if (message.source == listenerId) {
+					JsNull
+				}
+				else {
+					Json.toJson(Map("text" -> Json.toJson(message.content),
+					                "type" -> Json.toJson(Login.toString)))
+				}
+		}
+	}
+
+	private def willSeeMessage(message: Message, listener: Listener) = {
+		message.code match {
+			case Say => true
+			case Login => message.source != listener.id
 		}
 	}
 
@@ -68,6 +87,24 @@ object ListenManager {
 		AccountModel.getAccount(source) match {
 			case Some(account) => account.username
 			case None => "It"
+		}
+	}
+
+	private def purgeMessages {
+		val minIdx = listenerMap.foldRight(messageList.length.toLong) { (listenerMapEntry, min) =>
+			Math.min(min, listenerMapEntry._2.messageIdx)
+		}
+
+		if (minIdx > 0) {
+			messageList = messageList.view.zipWithIndex
+				.filter(messageWithIdx => messageWithIdx._2 >= minIdx)
+				.map(messageWithIdx => messageWithIdx._1)
+				.toList
+
+			listenerMap.foreach{listenerMapEntry =>
+				val listener = listenerMapEntry._2
+				listenerMap += (listener.id -> listener.copy(messageIdx = listener.messageIdx - minIdx))
+			}
 		}
 	}
 }
