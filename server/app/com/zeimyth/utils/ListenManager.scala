@@ -49,7 +49,7 @@ object ListenManager {
 		)
 
 		listenerMap += (listener.id -> listener.copy(messageIdx = messageList.size))
-		purgeMessages
+		purgeMessages()
 		result
 	}
 
@@ -65,6 +65,9 @@ object ListenManager {
 
 				Json.toJson(Map("text" -> Json.toJson(pre + "\"" + message.content + "\""),
 				                "type" -> Json.toJson(Say.toString)))
+			case Emote =>
+				Json.toJson(Map("text" -> Json.toJson(getNameOfSource(message.source) + " " + message.content),
+				                "type" -> Json.toJson(Emote.toString)))
 			case Login =>
 				if (message.source == listenerId) {
 					JsNull
@@ -79,6 +82,7 @@ object ListenManager {
 	private def willSeeMessage(message: Message, listener: Listener) = {
 		message.code match {
 			case Say => true
+			case Emote => true
 			case Login => message.source != listener.id
 		}
 	}
@@ -90,7 +94,7 @@ object ListenManager {
 		}
 	}
 
-	private def purgeMessages {
+	private def purgeMessages() {
 		val minIdx = listenerMap.foldRight(messageList.length.toLong) { (listenerMapEntry, min) =>
 			Math.min(min, listenerMapEntry._2.messageIdx)
 		}

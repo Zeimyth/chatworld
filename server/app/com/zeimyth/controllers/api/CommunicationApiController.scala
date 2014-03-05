@@ -39,6 +39,16 @@ object CommunicationApiController extends ChatController {
 		}
 	)
 
+	def emote = Action(parse.json) (
+		withLogin { implicit request =>
+			val input = inputForm.bindFromCustomRequest.get
+			Logger.trace("Received emote from " + request.info + ": " + input.text)
+
+			ListenManager.addMessage(input.text, request.connectionId, Emote)
+			Ok("")
+		}
+	)
+
 	def listen = Action(parse.json) (
 //		withLogin { implicit request =>
 		withConnection { implicit request =>

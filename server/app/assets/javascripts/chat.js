@@ -117,6 +117,9 @@
 			if (commands['say'].test(line)) {
 				commands['say'].parse(line);
 			}
+			if (commands['emote'].test(line)) {
+				commands['emote'].parse(line);
+			}
 			else if (commands['create'].test(line)) {
 				commands['create'].parse(line);
 			}
@@ -225,13 +228,31 @@
 		 */
 		var regex = /^(?:"|(?:say\s))\s*(.*)/i
 		var action = function(text) {
-			// NOTE: Needs to check logged in status first?
 			send(text, '/say');
 		}
 
 		Command.call(this, regex, action, regex);
 	};
 	inherits(Say, Command);
+
+	var Emote = function() {
+		/*
+		 * (?:              non-capturing group
+		 *   :|(?:emote\s)  colon or "emote" followed by whitespace
+		 * )                end non-capturing group
+		 * \s*              one or more whitespace characters
+		 * (                group 1
+		 *   .*             one or more of any character
+		 * )                end group 1 - message the user is saying
+		 */
+		var regex = /^(?::|(?:emote\s))\s*(.*)/i
+		var action = function(text) {
+			send(text, '/emote');
+		}
+
+		Command.call(this, regex, action, regex);
+	}
+	inherits(Emote, Command);
 
 	var Create = function() {
 		/*
@@ -267,6 +288,7 @@
 
 	var commands = {
 		'say': new Say(),
+		'emote': new Emote(),
 		'create': new Create(),
 		'login': new Login()
 	};
