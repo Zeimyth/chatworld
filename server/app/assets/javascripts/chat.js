@@ -90,9 +90,19 @@
 					}
 					listenLoop();
 				},
-				function(errorMessage, _, errorType) {
-					display("An error occurred during listen loop! " + errorMessage, "error");
-//					listenLoop();
+				function(errorMessage, errorType) {
+					if (errorMessage) {
+						display('An error occurred during listen loop! ' + errorMessage, 'error');
+						listenLoop();
+					}
+					else if (errorType) {
+						display('An error occurred during listen loop! ' + errorType, 'error');
+						listenLoop();
+					}
+					else {
+						display('The connection with the server has been lost.', 'error');
+						// No response from server; end loop
+					}
 				}
 			)
 		}, 1000);
