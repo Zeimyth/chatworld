@@ -1,6 +1,7 @@
 package com.zeimyth.controllers.api
 
 import com.zeimyth.controllers.ChatController
+import com.zeimyth.controllers.FormUtils.formWrapper
 import com.zeimyth.models.AccountModel
 import com.zeimyth.models.ConnectionModel
 import com.zeimyth.models.UserInfo
@@ -12,7 +13,6 @@ import play.api.mvc._
 import play.api.Play
 
 import play.Logger
-import play.api.libs.json.JsValue
 import com.zeimyth.views.api.json.Message
 
 object ConnectionApiController extends ChatController {
@@ -33,43 +33,50 @@ object ConnectionApiController extends ChatController {
 		Ok(com.zeimyth.views.api.json.MessageOfTheDay(motd)).withCookies(Cookie("connectionId", id.toString))
 	}
 
-	def disconnect = Action { implicit request =>
-		val id = 0L
-		Logger.trace("Received disconnect from " + id)
-		ConnectionModel.closeConnection(id)
+	def disconnect = Action(parse.empty) (
+		withConnection { implicit request =>
+			Logger.trace("Received disconnect from " + request.info)
+			ConnectionModel.closeConnection(request.connectionId)
 
-		Ok("")
-	}
+			Ok("")
+		}
+	)
 
-	def login = Action(parse.json) { implicit request =>
-		userForm.bindFromRequest.fold(
-			formWithErrors => {
-				Logger.trace("Received malformed login request from " + request.remoteAddress)
-				BadRequest("login usage info (TEMP)")
-			},
-			user => {
-				val id = request.cookies.get("connectionId") match {
-					case Some(cookie) => cookie.value.toLong
-					case None => -1L
+	def login = Action(parse.json) (
+		withConnection { implicit request =>
+			userForm.bindFromCustomRequest.fold(
+				formWithErrors => {
+					Logger.trace("Received malformed login request from " + request.remoteAddress)
+					BadRequest("login usage info (TEMP)")
+				},
+				user => {
+					Logger.trace("Received login from " + request.info + ": (" + user.username + ", " + user.password + ")")
+
+					if (AccountModel.tryLogin(user, request.getConnection)) {
+						Ok(Message("login successful! (TEMP)"))
+					}
+					else {
+						BadRequest("invalid login (TEMP)")
+					}
 				}
+			)
+		}
+	)
 
-				Logger.trace("Received login from " + request.remoteAddress + " (" + id + "): (" + user.username + ", " +
-					user.password + ")")
-
-				Ok("")
+	def logout = Action(parse.empty) (
+		withConnection { implicit request =>
+			Logger.trace("Received logout from " + request.info)
+			ConnectionModel.getUserIdByConnection(request.connectionId) match {
+				case Some(userId) => AccountModel.logout(userId)
+				case None =>
 			}
-		)
-
-	}
-
-	def logout = Action { implicit request =>
-		Logger.trace("Received logout from " + request.remoteAddress)
-		Ok("")
-	}
+			Ok(Message("logged out (TEMP)"))
+		}
+	)
 
 	def create = Action(parse.json) (
-		withConnection[JsValue] { request =>
-			userForm.bindFromRequest()(request.getRequest).fold(
+		withConnection { implicit request =>
+			userForm.bindFromCustomRequest.fold(
 				formWithErrors => {
 					Logger.trace("Received malformed create request from " + request.remoteAddress + ", reason: " +
 						formWithErrors.errors)

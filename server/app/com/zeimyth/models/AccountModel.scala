@@ -3,12 +3,23 @@ package com.zeimyth.models
 import java.util.Date
 import play.Logger
 
-case class Account(	id: Long,
-										username: String,
-										password: String,
-										created: Date,
-										var lastLoggedIn: Date,
-										var connectionId: Option[Long])
+case class Account(id: Long,
+                   username: String,
+                   password: String,
+                   created: Date,
+                   lastLoggedIn: Date,
+                   connectionId: Option[Long]) {
+
+	def copy(id: Long = id,
+	         username: String = username,
+	         password: String = password,
+	         created: Date = created,
+	         lastLoggedIn: Date = lastLoggedIn,
+	         connectionId: Option[Long] = connectionId) = {
+
+		Account(id, username, password, created, lastLoggedIn, connectionId)
+	}
+}
 
 case class UserInfo(username: String, password: String)
 
@@ -28,6 +39,10 @@ object AccountModel {
 
 	private def isUsernameUnique(username: String) = {
 		getAccountByUsername(username).isEmpty
+	}
+
+	def getAccount(id: Long): Option[Account] = {
+		accountMap.get(id)
 	}
 
 	def getAccountByUsername(username: String): Option[Account] = {
@@ -63,13 +78,22 @@ object AccountModel {
 					if (account.connectionId.isDefined) {
 						// The user was already logged in through another connection; deal with that here
 					}
-					account.connectionId = Some(connection.id)
+
+					accountMap += (account.id -> account.copy(connectionId = Some(connection.id)))
+					ConnectionModel.addUserIdToConnection(connection.id, account.id)
 					true
 				}
 				else {
 					false
 				}
 			case None => false
+		}
+	}
+
+	def logout(userId: Long) {
+		getAccount(userId) match {
+			case Some(account) => accountMap -= account.id
+			case None =>
 		}
 	}
 }

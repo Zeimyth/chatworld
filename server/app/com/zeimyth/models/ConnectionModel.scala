@@ -9,7 +9,7 @@ import play.api.Play.current
 /**
  * @param id An extremely insecure way to identify each client connection
  * @param created
- * @param lastComunication
+ * @param lastCommunication
  * @param userId
  */
 case class Connection(
@@ -65,7 +65,7 @@ object ConnectionModel {
 
 	private val connectionMap = scala.collection.mutable.Map[Long, Connection]()
 
-	private def ensurePatches {
+	private def ensurePatches() {
 		PatchManager.ensurePatches()
 	}
 	
@@ -86,15 +86,10 @@ object ConnectionModel {
 	}
 
 	def getConnection(id: Long): Option[Connection] = {
-		try {
-			Some(connectionMap(id))
-		}
-		catch {
-			case e: NoSuchElementException => None
-		}
+		connectionMap.get(id)
 	}
 
-	def getConnectionUserId(id: Long): Option[Long] = {
+	def getUserIdByConnection(id: Long): Option[Long] = {
 		getConnection(id) match {
 			case Some(connection) => connection.userId
 			case None => None
@@ -120,7 +115,7 @@ object ConnectionModel {
 			case Some(connection) =>
 				connectionMap -= id
 				connection.userId match {
-					case Some(userId) => // Log out the user? Put in a detatched state?
+					case Some(userId) => AccountModel.logout(userId)
 					case None =>
 				}
 			case None =>

@@ -1,20 +1,17 @@
 (function() {
 
+	//-------------------------------------------------------------------------
+	// Utility Functions
+	//-------------------------------------------------------------------------
+
 	var inherits = function(child, parent) {
 		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = parent;
 	};
 
-	/**
-	 * Initializes a new chat client with the given message of the day and display function.
-	 *
-	 * @param {string} motd The Message of the Day received from the server
-	 * @param {function(string)} display The function to display a message to the user.
-	 */
-	var init = function(motd, display) {
-		display(motd);
-		display("It works!");
-	};
+	//-------------------------------------------------------------------------
+	// Communication
+	//-------------------------------------------------------------------------
 
 	/**
 	 * Displays the given message to the user.
@@ -81,6 +78,26 @@
 		});
 	};
 
+	var listenLoop = function() {
+		// We want this loop to continue indefinitely, but we need to prevent a stack
+		// overflow error
+		setTimeout(function(){
+			send(null, '/listen', function(data) {
+					if (data['messages']) {
+						data['messages'].forEach(function(message) {
+							display(message.text, message.type);
+						});
+					}
+					listenLoop();
+				},
+				function(errorMessage, type){
+					display("An error occurred during listen loop! " + errorMessage, "error");
+//					listenLoop();
+				}
+			)
+		}, 1000);
+	};
+
 	/**
 	 * Parses the user's input for commands and takes the appropriate action.
 	 */
@@ -127,8 +144,8 @@
 		success = success || function(content) {
 			display(content['message'], content['status']);
 		}
-		error = error || function(xhr, text, e) {
-			display('An error occurred during connection! ' + e, 'error');
+		error = error || function(errorMessage, _) {
+			display(errorMessage, 'error');
 		}
 
 		$.ajax(url, {
@@ -136,12 +153,14 @@
 			'data': JSON.stringify(content),
 			'dataType': 'json',
 			'success': function(data) {
-				if (data.status == 'success') {
+				if (data.status != 'failure') {
 					success(data.content);
 				}
 			},
 			'type': 'POST',
-			'error': error
+			'error': function(xhr, text, e) {
+				error(xhr.resopnseText, e);
+			}
 		});
 	};
 
@@ -231,6 +250,7 @@
 
 		send('', '/connect', function(data) {
 			display(data.motd);
+			listenLoop();
 		});
 	});
 })();
