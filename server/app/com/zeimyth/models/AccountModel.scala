@@ -75,19 +75,23 @@ object AccountModel {
 		getAccountByUsername(userInfo.username) match {
 			case Some(account) =>
 				if (account.password == userInfo.password) {
-					if (account.connectionId.isDefined) {
-						// The user was already logged in through another connection; deal with that here
-					}
-
-					accountMap += (account.id -> account.copy(connectionId = Some(connection.id)))
-					ConnectionModel.addUserIdToConnection(connection.id, account.id)
-					true
+					login(account, connection)
 				}
 				else {
 					false
 				}
 			case None => false
 		}
+	}
+
+	def login(account: Account, connection: Connection): Boolean = {
+		if (account.connectionId.isDefined) {
+			// The user was already logged in through another connection; deal with that here
+		}
+
+		accountMap += (account.id -> account.copy(connectionId = Some(connection.id)))
+		ConnectionModel.addUserIdToConnection(connection.id, account.id)
+		true
 	}
 
 	def logout(userId: Long) {

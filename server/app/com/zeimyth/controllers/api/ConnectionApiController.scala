@@ -86,12 +86,13 @@ object ConnectionApiController extends ChatController {
 					Logger.trace("Received create request from " + request.info + ": (" + user.username + ", " + user.password +
 						")")
 
-					if (AccountModel.newAccount(user.username, user.password).isDefined) {
-						Ok(Message("Account " + user.username + " created (TEMP)"))
-					}
-					else {
-						Logger.trace("An error occurred during account creation")
-						BadRequest(Message("username in use or password invalid (TEMP)"))
+					AccountModel.newAccount(user.username, user.password) match {
+						case Some(account) =>
+							AccountModel.login(account, request.getConnection)
+							Ok(Message("Account " + user.username + " created and logged in (TEMP)"))
+						case None =>
+							Logger.trace("An error occurred during account creation")
+							BadRequest(Message("username in use or password invalid (TEMP)"))
 					}
 				}
 			)
