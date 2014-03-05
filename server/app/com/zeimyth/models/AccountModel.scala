@@ -49,6 +49,13 @@ object AccountModel {
 		accountMap.get(id)
 	}
 
+	def getAccountByConnectionId(connectionId: Long): Option[Account] = {
+		ConnectionModel.getUserIdByConnection(connectionId) match {
+			case Some(userId) => getAccount(userId)
+			case None => None
+		}
+	}
+
 	def getAccountByUsername(username: String): Option[Account] = {
 		val lowercaseUsername = username.toLowerCase
 		accountMap.values.find(_.username.toLowerCase == lowercaseUsername)

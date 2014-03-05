@@ -2,13 +2,16 @@ package com.zeimyth.controllers.api
 
 import com.zeimyth.controllers.ChatController
 import com.zeimyth.controllers.FormUtils.formWrapper
+import com.zeimyth.models.AccountModel
 import com.zeimyth.utils.ListenManager
 import com.zeimyth.utils.MessageType._
+import com.zeimyth.views.api.json.{Default, Empty}
 
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.Action
 import play.Logger
+import play.api.libs.json.Json
 
 object CommunicationApiController extends ChatController {
 
@@ -23,19 +26,13 @@ object CommunicationApiController extends ChatController {
 		)(input.apply)(input.unapply)
 	)
 
-//	val listenRequestForm = Form(
-//		mapping(
-//			"room" -> longNumber
-//		)(listenRequest.apply)(listenRequest.unapply)
-//	)
-
 	def say = Action(parse.json) (
 		withLogin { implicit request =>
 			val input = inputForm.bindFromCustomRequest.get
 			Logger.trace("Received say from " + request.info + ": " + input.text)
 
 			ListenManager.addMessage(input.text, request.connectionId, Say)
-			Ok("")
+			Ok(Empty())
 		}
 	)
 
@@ -45,19 +42,20 @@ object CommunicationApiController extends ChatController {
 			Logger.trace("Received emote from " + request.info + ": " + input.text)
 
 			ListenManager.addMessage(input.text, request.connectionId, Emote)
-			Ok("")
+			Ok(Empty())
 		}
 	)
 
 	def listen = Action(parse.json) (
-//		withLogin { implicit request =>
 		withConnection { implicit request =>
-//			val request = listenRequestForm.bindFromCustomRequest.get
 			Logger.trace("Received listen request from " + request.info + ".")
-
-			val result = ListenManager.listen(request.connectionId)
-			Logger.trace(result.toString())
-			Ok(result)
+			AccountModel.getAccountByConnectionId(request.connectionId) match {
+				case Some(_) =>
+					val result = ListenManager.listen(request.connectionId)
+					Logger.trace(result.toString())
+					Ok(result)
+				case None => Ok(Default(true, Json.parse("{}")))
+			}
 		}
 	)
 }

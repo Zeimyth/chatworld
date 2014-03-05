@@ -18,16 +18,9 @@ trait ChatController extends Controller {
 
 	def withLogin(inner: CustomRequest => Result)(request: Request[_]): Result = {
 		withConnection { cRequest =>
-			cRequest.getConnection.userId match {
-				case Some(userId) =>
-					if (AccountModel.getAccount(userId).isDefined) {
-						inner(cRequest)
-					}
-					else {
-						Unauthorized(Message("Login verification error (TEMP)"))
-					}
+			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
+				case Some(account) => inner(cRequest)
 				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
-
 			}
 		}(request)
 	}

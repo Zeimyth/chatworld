@@ -41,8 +41,9 @@ object ListenManager {
 	}
 
 	private def getNewMessages(listener: Listener) = {
-		Logger.trace("Get new messages for " + listener.id)
-		Logger.trace("Messages in bank: " + messageList.length + ", listener wants message " + listener.messageIdx)
+//		Logger.trace("Get new messages for " + listener.id)
+//		Logger.trace("Messages in bank: " + messageList.length + ", listener wants message " + listener.messageIdx)
+//		debugMessageBank()
 		val result = Json.toJson(messageList.view.zipWithIndex
 			.filter(messageWithIdx => messageWithIdx._2 >= listener.messageIdx && willSeeMessage(messageWithIdx._1, listener))
 			.map(messageWithIdx => messageToJs(messageWithIdx._1, listener.id))
@@ -110,5 +111,10 @@ object ListenManager {
 				listenerMap += (listener.id -> listener.copy(messageIdx = listener.messageIdx - minIdx))
 			}
 		}
+	}
+
+	private def debugMessageBank() {
+		Logger.trace("Messages: " + messageList.length)
+		messageList.foreach(message => Logger.trace(message.toString))
 	}
 }

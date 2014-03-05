@@ -81,7 +81,7 @@
 	var listenLoop = function() {
 		// We want this loop to continue indefinitely, but we need to prevent a stack
 		// overflow error
-		setTimeout(function(){
+		setTimeout(function() {
 			send(null, '/listen', function(data) {
 					if (data['messages']) {
 						data['messages'].forEach(function(message) {
@@ -105,7 +105,7 @@
 					}
 				}
 			)
-		}, 1000);
+		}, 500);
 	};
 
 	/**
@@ -117,7 +117,7 @@
 			if (commands['say'].test(line)) {
 				commands['say'].parse(line);
 			}
-			if (commands['emote'].test(line)) {
+			else if (commands['emote'].test(line)) {
 				commands['emote'].parse(line);
 			}
 			else if (commands['create'].test(line)) {
@@ -158,7 +158,7 @@
 			display(content['message'], content['status']);
 		}
 		error = error || function(errorMessage, errorClass) {
-			if (errorMessage) {
+			if (typeof errorMessage == "string") {
 				try {
 					var data = JSON.parse(errorMessage);
 				} catch (error) {
@@ -182,13 +182,18 @@
 			'data': JSON.stringify(content),
 			'dataType': 'json',
 			'success': function(data) {
-				if (data.status != 'failure') {
+				if (data['status'] != 'failure' && data['content']) {
 					success(data['content']);
 				}
 			},
 			'type': 'POST',
 			'error': function(xhr, text, e) {
-				error(xhr.responseText, e);
+				if (text == 'error') {
+					error(xhr.responseText, e);
+				}
+				else {
+					display('Unrecognized response from the server: ' + e, 'error');
+				}
 			}
 		});
 	};
@@ -243,7 +248,7 @@
 		 * \s*              one or more whitespace characters
 		 * (                group 1
 		 *   .*             one or more of any character
-		 * )                end group 1 - message the user is saying
+		 * )                end group 1 - message the user is emoting
 		 */
 		var regex = /^(?::|(?:emote\s))\s*(.*)/i
 		var action = function(text) {
