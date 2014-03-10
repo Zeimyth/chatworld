@@ -21,6 +21,6 @@ object InputController extends Controller {
 	def echo = Action(parse.json) { implicit request =>
 		val input = inputForm.bindFromRequest.get
 
-		Ok(com.zeimyth.views.api.json.Message(input.text))
+		Ok(com.zeimyth.views.api.json.Message("There is no command for: " + input.text))
 	}
 }
