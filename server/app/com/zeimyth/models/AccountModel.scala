@@ -13,7 +13,7 @@ case class Account(id: Long,
                    created: Date,
                    lastLoggedIn: Date,
                    connectionId: Option[Long]) {
-	
+
 	def info: String = {
 		username + " #" + id
 	}
@@ -85,6 +85,7 @@ object AccountModel {
 				else {
 					false
 				}
+
 			case None => false
 		}
 	}
@@ -92,20 +93,28 @@ object AccountModel {
 	def login(account: Account, connection: Connection): Boolean = {
 		if (account.connectionId.isDefined) {
 			// The user was already logged in through another connection; deal with that here
+			Logger.warn(account.info + " logging in with connection " + connection.id + " when already logged in at " +
+				"connection " + account.connectionId + "")
 		}
 
-		accountMap += (account.id -> account.copy(connectionId = Some(connection.id)))
+		accountMap += (account.id -> account.copy(connectionId = Some(connection.id), lastLoggedIn = new Date()))
 		ConnectionModel.addUserIdToConnection(connection.id, account.id)
-
 		ListenManager.addMessage(account.username + " wakes up.", account.id, Login)
+
+		Logger.debug("Connection " + connection.id + " logged in as " + account.info)
 
 		true
 	}
 
 	def logout(userId: Long) {
 		getAccount(userId) match {
-			case Some(account) => accountMap -= account.id
-			case None =>
+			case Some(account) =>
+				accountMap -= account.id
+				ListenManager.addMessage(account.username + " falls asleep.", account.id, Logout)
+
+				Logger.debug(account.info + " logged out")
+
+			case None => Logger.warn("Logout attempted for nonexistent user " + userId)
 		}
 	}
 }
