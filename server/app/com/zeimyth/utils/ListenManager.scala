@@ -74,6 +74,9 @@ object ListenManager {
 
 			case Login =>
 				message.content
+
+			case Logout =>
+				message.content
 		}
 	}
 
@@ -82,6 +85,7 @@ object ListenManager {
 			case Say => true
 			case Emote => true
 			case Login => message.source != listener.id
+			case Logout => true
 		}
 	}
 
