@@ -13,6 +13,21 @@
 	// Communication
 	//-------------------------------------------------------------------------
 
+	var hasFocus = true;
+	var docTitle = document.title;
+	var missedMessages = 0;
+
+	var ACTIVE_DELAY = 500;
+	var INACTIVE_DELAY = 2000;
+	var listenDelay = ACTIVE_DELAY;
+
+	var notifyMessageReceived = function() {
+		if (!hasFocus) {
+			missedMessages++;
+			document.title = "(" + missedMessages + ") " + docTitle;
+		}
+	};
+
 	/**
 	 * Displays the given message to the user.
 	 * 
@@ -28,6 +43,8 @@
 			var messageDiv = $('<div>').addClass('text');
 			messageDiv.append(messageSpan);
 			$('#display-content').append(messageDiv);
+
+			notifyMessageReceived();
 		};
 
 		message.split('\n').forEach(displayParsed);
@@ -70,12 +87,25 @@
 			}
 		});
 
+		window.onfocus = function() {
+			hasFocus = true;
+			missedMessages = 0;
+			document.title = docTitle;
+			listenDelay = ACTIVE_DELAY;
+		};
+
+		window.onblur = function() {
+			hasFocus = false;
+			listenDelay = INACTIVE_DELAY;
+		};
+
 		$(window).bind('beforeunload', function() {
 			$.ajax('/disconnect', {
 				async: false,
 				'type': 'POST'
 			});
 		});
+
 	};
 
 	var listenLoop = function() {
@@ -105,7 +135,7 @@
 					}
 				}
 			)
-		}, 500);
+		}, listenDelay);
 	};
 
 	/**
