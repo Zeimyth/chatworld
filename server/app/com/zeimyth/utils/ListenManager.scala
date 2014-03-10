@@ -18,7 +18,9 @@ object ListenManager {
 	val listenerMap = scala.collection.mutable.Map[Long, Listener]()
 
 	def addMessage(content: String, source: Long, code: MessageType/*, room: Long*/) {
-		messageList = messageList :+ Message(content, source, code)
+		val newMessage = Message(content, source, code)
+		Logger.info(getNameOfSource(source) + ": " + getMessageText(newMessage, -1L))
+		messageList = messageList :+ newMessage
 	}
 
 	def listen(listenerId: Long): JsValue = {
@@ -40,9 +42,6 @@ object ListenManager {
 	}
 
 	private def getNewMessages(listener: Listener) = {
-//		Logger.trace("Get new messages for " + listener.id)
-//		Logger.trace("Messages in bank: " + messageList.length + ", listener wants message " + listener.messageIdx)
-//		debugMessageBank()
 		val result = Json.toJson(messageList.view.zipWithIndex
 			.filter(messageWithIdx => messageWithIdx._2 >= listener.messageIdx && willSeeMessage(messageWithIdx._1, listener))
 			.map(messageWithIdx => messageToJs(messageWithIdx._1, listener.id))
@@ -54,6 +53,11 @@ object ListenManager {
 	}
 
 	private def messageToJs(message: Message, listenerId: Long) = {
+		Json.obj("text" -> Json.toJson(getMessageText(message, listenerId)),
+			       "type" -> Json.toJson(message.code.toString))
+	}
+
+	private def getMessageText(message: Message, listenerId: Long) = {
 		message.code match {
 			case Say =>
 				val pre = if (message.source == listenerId) {
@@ -63,21 +67,13 @@ object ListenManager {
 					getNameOfSource(message.source) + " says, "
 				}
 
-				Json.toJson(Map("text" -> Json.toJson(pre + "\"" + message.content + "\""),
-				                "type" -> Json.toJson(Say.toString)))
+				pre + "\"" + message.content + "\""
 
 			case Emote =>
-				Json.toJson(Map("text" -> Json.toJson(getNameOfSource(message.source) + " " + message.content),
-				                "type" -> Json.toJson(Emote.toString)))
+				getNameOfSource(message.source) + " " + message.content
 
 			case Login =>
-				if (message.source == listenerId) {
-					JsNull
-				}
-				else {
-					Json.toJson(Map("text" -> Json.toJson(message.content),
-					                "type" -> Json.toJson(Login.toString)))
-				}
+				message.content
 		}
 	}
 
