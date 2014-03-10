@@ -5,9 +5,9 @@ import com.zeimyth.utils.MessageType._
 import com.zeimyth.views.api.json.Default
 
 import play.api.libs.json._
+import play.Logger
 
 import scala.Some
-import play.Logger
 
 case class Message(content: String, source: Long, code: MessageType)
 case class Listener(id: Long, messageIdx: Long/*, messageBank: Long*/)
@@ -18,7 +18,6 @@ object ListenManager {
 	val listenerMap = scala.collection.mutable.Map[Long, Listener]()
 
 	def addMessage(content: String, source: Long, code: MessageType/*, room: Long*/) {
-//		messageList :: message
 		messageList = messageList :+ Message(content, source, code)
 	}
 
@@ -66,9 +65,11 @@ object ListenManager {
 
 				Json.toJson(Map("text" -> Json.toJson(pre + "\"" + message.content + "\""),
 				                "type" -> Json.toJson(Say.toString)))
+
 			case Emote =>
 				Json.toJson(Map("text" -> Json.toJson(getNameOfSource(message.source) + " " + message.content),
 				                "type" -> Json.toJson(Emote.toString)))
+
 			case Login =>
 				if (message.source == listenerId) {
 					JsNull

@@ -1,7 +1,8 @@
 package com.zeimyth.controllers
 
+import com.zeimyth.models.{AccountModel, Connection}
+
 import play.api.mvc.Request
-import com.zeimyth.models.{AccountModel, ConnectionModel, Connection}
 
 object CustomRequest {
 	implicit def extractRequest(cRequest: CustomRequest): Request[_] = cRequest.getRequest

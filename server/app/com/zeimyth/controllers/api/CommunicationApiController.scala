@@ -9,16 +9,13 @@ import com.zeimyth.views.api.json.{Default, Empty}
 
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.mvc.Action
 import play.Logger
-import play.api.libs.json.Json
 
 object CommunicationApiController extends ChatController {
 
 	case class input(text: String)
-
-//	case class location()
-//	case class listenRequest(roomId: Long)
 
 	val inputForm = Form(
 		mapping(

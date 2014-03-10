@@ -1,8 +1,9 @@
 package com.zeimyth.controllers
 
-import play.api.mvc.{Action, Result, Request, Controller}
-import com.zeimyth.models.{AccountModel, ConnectionModel, Connection}
+import com.zeimyth.models.{AccountModel, ConnectionModel}
 import com.zeimyth.views.api.json.Message
+
+import play.api.mvc.{Result, Request, Controller}
 
 trait ChatController extends Controller {
 	def withConnection(inner: CustomRequest => Result)(request: Request[_]): Result = {
