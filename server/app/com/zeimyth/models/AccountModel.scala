@@ -13,15 +13,9 @@ case class Account(id: Long,
                    created: Date,
                    lastLoggedIn: Date,
                    connectionId: Option[Long]) {
-
-	def copy(id: Long = id,
-	         username: String = username,
-	         password: String = password,
-	         created: Date = created,
-	         lastLoggedIn: Date = lastLoggedIn,
-	         connectionId: Option[Long] = connectionId) = {
-
-		Account(id, username, password, created, lastLoggedIn, connectionId)
+	
+	def info: String = {
+		username + " #" + id
 	}
 }
 

@@ -15,9 +15,8 @@ class CustomRequest(request: Request[_], connection: Connection) {
 	lazy val getConnection = connection
 	lazy val connectionId = connection.id
 
-	lazy val info = remoteAddress + " (" + connectionId +
-		(AccountModel.getAccountByConnectionId(connectionId) match {
-			case Some(account) => ", " + account.username
-			case None => ""
-		}) + ")"
+	lazy val info = AccountModel.getAccountByConnectionId(connectionId) match {
+		case Some(account) => account.info + " (cId=" + connectionId + ",ip=" + remoteAddress + ")"
+		case None => remoteAddress + " (cId=" + connectionId + ")"
+	}
 }
