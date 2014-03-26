@@ -55,6 +55,20 @@ object AccountModel {
 		accountMap.values.find(_.username.toLowerCase == lowercaseUsername)
 	}
 
+	def whois(name: String): Option[Account] = {
+		getAccountByUsername(name)
+	}
+
+	def whoisOnline(): Seq[Account] = {
+		ConnectionModel.getAllActiveConnections
+			.map { connection =>
+				getAccountByConnectionId(connection.id)
+			}
+			.filter(_.isDefined)
+			.map(_.get)
+			.toSeq
+	}
+
 	private def isPasswordValid(password: String) = {
 		// Passwords should be comprised of letters, numbers, or underscores only
 		password.matches("^\\w+$")

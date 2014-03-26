@@ -12,6 +12,10 @@ POST    /login                      com.zeimyth.controllers.api.ConnectionApiCon
 POST    /logout                     com.zeimyth.controllers.api.ConnectionApiController.logout
 POST    /disconnect                 com.zeimyth.controllers.api.ConnectionApiController.disconnect
 
+# Identity requests
+GET     /who                        com.zeimyth.controllers.api.IdentityController.who
+GET     /whoami                     com.zeimyth.controllers.api.IdentityController.whoAmI
+
 # Handle user input
 POST    /input                      com.zeimyth.controllers.api.InputController.handleInput
 POST    /echo                       com.zeimyth.controllers.api.InputController.echo

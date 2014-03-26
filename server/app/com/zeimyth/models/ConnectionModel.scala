@@ -89,6 +89,10 @@ object ConnectionModel {
 		connectionMap.get(id)
 	}
 
+	def getAllActiveConnections: Seq[Connection] = {
+		connectionMap.map(_._2).toSeq
+	}
+
 	def getUserIdByConnection(id: Long): Option[Long] = {
 		getConnection(id) match {
 			case Some(connection) => connection.userId
