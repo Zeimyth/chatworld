@@ -156,6 +156,9 @@
 			else if (commands['login'].test(line)) {
 				commands['login'].parse(line);
 			}
+			else if (commands['whoami'].test(line)) {
+				commands['whoami'].parse(line);
+			}
 			else {
 				send(line);
 			}
@@ -227,6 +230,16 @@
 			}
 		});
 	};
+
+	var get = function(query, url) {
+		$.ajax(url, {
+			'success': function(data) {
+				if (data['status'] != 'failure' && data['content']) {
+					display(data['content']['message'], data['content']['status']);
+				}
+			}
+		})
+	}
 
 	//-------------------------------------------------------------------------
 	// User Commands
@@ -321,11 +334,25 @@
 	}
 	inherits(Login, Command);
 
+	var WhoAmI = function () {
+		/*
+		 *  whoami        "whoami" command
+		 */
+		var regex = /^whoami$/i
+		var action = function() {
+			get(null, '/whoami')
+		}
+
+		Command.call(this, regex, action, regex);
+	}
+	inherits(WhoAmI, Command);
+
 	var commands = {
 		'say': new Say(),
 		'emote': new Emote(),
 		'create': new Create(),
-		'login': new Login()
+		'login': new Login(),
+		'whoami': new WhoAmI()
 	};
 
 	$(function() {
