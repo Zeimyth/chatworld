@@ -28,7 +28,7 @@ object ConnectionApiController extends ChatController {
 
 	def connect = Action { implicit request =>
 		val id = ConnectionModel.newConnection()
-		Logger.trace("Received new connection from " + request.remoteAddress + " as connection " + id)
+		Logger.debug("Received new connection from " + request.remoteAddress + " as connection " + id)
 
 		Ok(com.zeimyth.views.api.json.MessageOfTheDay(motd)).withCookies(Cookie("connectionId", id.toString))
 	}
