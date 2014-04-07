@@ -18,7 +18,7 @@ object IdentityController extends ChatController {
 				case None => Seq()
 			}
 
-			val whoData = if (names.isEmpty) {
+			val whoData = if (!names.isEmpty) {
 				names.map(AccountModel.whois)
 					.filter(_.isDefined)
 					.map(_.get)

@@ -1,6 +1,6 @@
 package com.zeimyth.controllers
 
-import com.zeimyth.models.{AccountModel, Connection}
+import com.zeimyth.models.{ConnectionModel, AccountModel, Connection}
 
 import play.api.mvc.Request
 
@@ -26,5 +26,9 @@ class CustomRequest(request: Request[_], connection: Connection) {
 	lazy val info = AccountModel.getAccountByConnectionId(connectionId) match {
 		case Some(account) => account.info + " (cId=" + connectionId + ",ip=" + remoteAddress + ")"
 		case None => remoteAddress + " (cId=" + connectionId + ")"
+	}
+
+	def resetIdleTimer() {
+		ConnectionModel.resetIdleTimer(connection)
 	}
 }

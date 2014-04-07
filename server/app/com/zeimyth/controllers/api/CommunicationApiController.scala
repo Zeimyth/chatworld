@@ -44,7 +44,7 @@ object CommunicationApiController extends ChatController {
 	)
 
 	def listen = Action(parse.json) (
-		withConnection { implicit request =>
+		withLoginNoAction { implicit request =>
 			Logger.trace("Received listen request from " + request.info + ".")
 			AccountModel.getAccountByConnectionId(request.connectionId) match {
 				case Some(_) =>

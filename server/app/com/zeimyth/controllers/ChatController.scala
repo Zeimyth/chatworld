@@ -10,7 +10,10 @@ trait ChatController extends Controller {
 		request.cookies.get("connectionId") match {
 			case Some(connectionCookie) =>
 				ConnectionModel.getConnection(connectionCookie.value.toLong) match {
-					case Some(connection) => inner(new CustomRequest(request, connection))
+					case Some(connection) =>
+						val cRequest = new CustomRequest(request, connection)
+						cRequest.resetIdleTimer()
+						inner(cRequest)
 					case None =>
 						// Somehow notify user that their connection was reset?
 						Unauthorized("Invalid connection id (TEMP)")
@@ -24,6 +27,17 @@ trait ChatController extends Controller {
 	}
 
 	def withLogin(inner: CustomRequest => Result)(request: Request[_]): Result = {
+		withConnection { cRequest =>
+			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
+				case Some(account) =>
+					cRequest.resetIdleTimer()
+					inner(cRequest)
+				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
+			}
+		}(request)
+	}
+
+	def withLoginNoAction(inner: CustomRequest => Result)(request: Request[_]): Result = {
 		withConnection { cRequest =>
 			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
 				case Some(account) => inner(cRequest)

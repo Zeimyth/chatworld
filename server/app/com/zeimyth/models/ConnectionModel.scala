@@ -93,6 +93,10 @@ object ConnectionModel {
 		connectionMap.map(_._2).toSeq
 	}
 
+	def resetIdleTimer(connection: Connection) {
+		connectionMap += (connection.id -> connection.copy(lastCommunication = new Date()))
+	}
+
 	def getUserIdByConnection(id: Long): Option[Long] = {
 		getConnection(id) match {
 			case Some(connection) => connection.userId

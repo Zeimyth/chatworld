@@ -122,7 +122,13 @@
 				},
 				function(errorMessage, errorType) {
 					if (errorMessage) {
-						display('An error occurred during listen loop! ' + errorMessage, 'error');
+						var responseObject = JSON.parse(errorMessage);
+						if (responseObject['content'] && responseObject['content']['message'] == 'You must be logged in to do that (TEMP)') {
+							// This is normal; ignore
+						}
+						else {
+							display('An error occurred during listen loop! ' + errorMessage, 'error');
+						}
 						listenLoop();
 					}
 					else if (errorType) {
@@ -155,6 +161,9 @@
 			}
 			else if (commands['login'].test(line)) {
 				commands['login'].parse(line);
+			}
+			else if (commands['who'].test(line)) {
+				commands['who'].parse(line);
 			}
 			else if (commands['whoami'].test(line)) {
 				commands['whoami'].parse(line);
@@ -251,7 +260,7 @@
 	var Command = function(testRegex, action, parseRegex) {
 		this.testRegex = testRegex || /.*/;
 		this.parseRegex = parseRegex || /(.*)/;
-		this.action = action || function(line) {send(line);};
+		this.action = action || function(line) { send(line); };
 	};
 
 	Command.prototype.test = function(text) {
@@ -261,7 +270,7 @@
 	Command.prototype.parse = function(text) {
 		var args = this.parseRegex.exec(text);
 		args.splice(0, 1);
-		this.action.apply(window, args);
+		this.action.apply(this, args);
 	};
 
 	var Say = function() {
@@ -334,6 +343,39 @@
 	}
 	inherits(Login, Command);
 
+	var Who = function() {
+		/*
+		 * who            "who" command
+		 * (?:            optional non-capturing group
+		 *   \s+          one or more whitespace characters
+		 *   (            capturing group
+		 *     [\w ]+     one or more usernames separated by a space
+		 *   )
+		 * )?             makes non-capturing group optional
+		 */
+		var regex = /^who(?:\s+([\w ]*))?$/i
+		var action = function(names) {
+			var queryString = '';
+
+			if (names) {
+				queryString = '?';
+
+				names.split(' ').forEach(function(name) {
+					if (name) {
+						queryString += name + ',';
+					}
+				});
+
+				queryString = queryString.substring(0, queryString.length - 1);
+			}
+
+			get(null, '/who' + queryString);
+		}
+
+		Command.call(this, regex, action, regex);
+	}
+	inherits(Who, Command);
+
 	var WhoAmI = function () {
 		/*
 		 *  whoami        "whoami" command
@@ -352,6 +394,7 @@
 		'emote': new Emote(),
 		'create': new Create(),
 		'login': new Login(),
+		'who': new Who(),
 		'whoami': new WhoAmI()
 	};
 
