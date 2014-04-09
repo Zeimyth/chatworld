@@ -6,13 +6,13 @@ import com.zeimyth.views.api.json.Message
 import play.api.mvc.{Cookie, Result, Request, Controller}
 
 trait ChatController extends Controller {
-	def withConnection(inner: CustomRequest => Result)(request: Request[_]): Result = {
+
+	def withConnectionNoAction(inner: CustomRequest => Result)(request: Request[_]): Result = {
 		request.cookies.get("connectionId") match {
 			case Some(connectionCookie) =>
 				ConnectionModel.getConnection(connectionCookie.value.toLong) match {
 					case Some(connection) =>
 						val cRequest = new CustomRequest(request, connection)
-						cRequest.resetIdleTimer()
 						inner(cRequest)
 					case None =>
 						// Somehow notify user that their connection was reset?
@@ -26,11 +26,17 @@ trait ChatController extends Controller {
 		}
 	}
 
+	def withConnection(inner: CustomRequest => Result)(request: Request[_]): Result = {
+		withConnectionNoAction { cRequest =>
+			cRequest.resetIdleTimer()
+			inner(cRequest)
+		}(request)
+	}
+
 	def withLogin(inner: CustomRequest => Result)(request: Request[_]): Result = {
 		withConnection { cRequest =>
 			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
 				case Some(account) =>
-					cRequest.resetIdleTimer()
 					inner(cRequest)
 				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
 			}
@@ -38,7 +44,7 @@ trait ChatController extends Controller {
 	}
 
 	def withLoginNoAction(inner: CustomRequest => Result)(request: Request[_]): Result = {
-		withConnection { cRequest =>
+		withConnectionNoAction { cRequest =>
 			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
 				case Some(account) => inner(cRequest)
 				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
