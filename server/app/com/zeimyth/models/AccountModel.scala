@@ -123,9 +123,13 @@ object AccountModel {
 	def logout(userId: Long) {
 		getAccount(userId) match {
 			case Some(account) =>
-				accountMap -= account.id
-				ListenManager.addMessage(account.username + " falls asleep.", account.id, Logout)
+				account.connectionId match {
+					case Some(connectionId) => ConnectionModel.removeUserIdFromConnection(connectionId)
+					case None => Logger.warn("Logging out user " + account.info + " with no connectionId")
+				}
+				accountMap += (account.id -> account.copy(connectionId = None))
 
+				ListenManager.addMessage(account.username + " falls asleep.", account.id, Logout)
 				Logger.debug(account.info + " logged out")
 
 			case None => Logger.warn("Logout attempted for nonexistent user " + userId)

@@ -118,6 +118,13 @@ object ConnectionModel {
 		}
 	}
 
+	def removeUserIdFromConnection(id: Long) {
+		getConnection(id) match {
+			case Some(connection) => connectionMap += (connection.id -> connection.copy(userId = None))
+			case None =>
+		}
+	}
+
 	def closeConnection(id: Long) {
 		getConnection(id) match {
 			case Some(connection) =>
