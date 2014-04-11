@@ -34,21 +34,19 @@ trait ChatController extends Controller {
 	}
 
 	def withLogin(inner: CustomRequest => Result)(request: Request[_]): Result = {
-		withConnection { cRequest =>
-			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
-				case Some(account) =>
-					inner(cRequest)
-				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
-			}
-		}(request)
+		withConnection(loginAction(inner))(request)
 	}
 
 	def withLoginNoAction(inner: CustomRequest => Result)(request: Request[_]): Result = {
-		withConnectionNoAction { cRequest =>
+		withConnectionNoAction(loginAction(inner))(request)
+	}
+
+	private def loginAction(inner: CustomRequest => Result) = {
+		(cRequest: CustomRequest) => {
 			AccountModel.getAccountByConnectionId(cRequest.connectionId) match {
 				case Some(account) => inner(cRequest)
 				case None => Unauthorized(Message("You must be logged in to do that (TEMP)"))
 			}
-		}(request)
+		}
 	}
 }
