@@ -13,7 +13,7 @@ import play.api.mvc._
 import play.api.Play
 
 import play.Logger
-import com.zeimyth.views.api.json.Message
+import com.zeimyth.views.api.json.connection.{Create, Logout, Login}
 
 object ConnectionApiController extends ChatController {
 
@@ -53,10 +53,10 @@ object ConnectionApiController extends ChatController {
 					Logger.trace("Received login from " + request.info + ": (" + user.username + ", " + user.password + ")")
 
 					if (AccountModel.tryLogin(user, request.getConnection)) {
-						Ok(Message("login successful! (TEMP)"))
+						Ok(Login.success)
 					}
 					else {
-						BadRequest("invalid login (TEMP)")
+						BadRequest(Login.invalid)
 					}
 				}
 			)
@@ -70,7 +70,7 @@ object ConnectionApiController extends ChatController {
 				case Some(userId) => AccountModel.logout(userId)
 				case None =>
 			}
-			Ok(Message("logged out (TEMP)"))
+			Ok(Logout())
 		}
 	)
 
@@ -87,12 +87,12 @@ object ConnectionApiController extends ChatController {
 						")")
 
 					AccountModel.newAccount(user.username, user.password) match {
-						case Some(account) =>
+						case Left(account) =>
 							AccountModel.login(account, request.getConnection)
-							Ok(Message("Account " + user.username + " created and logged in (TEMP)"))
-						case None =>
-							Logger.trace("An error occurred during account creation")
-							BadRequest(Message("username in use or password invalid (TEMP)"))
+							Ok(Create.success)
+						case Right(error) =>
+							Logger.trace("An error occurred during account creation: " + error)
+							BadRequest(Create.invalid(error))
 					}
 				}
 			)

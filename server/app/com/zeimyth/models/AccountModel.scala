@@ -26,12 +26,17 @@ object AccountModel {
 
 	private var nextAccountId = -1L
 
-	def newAccount(username: String, password: String): Option[Account] = {
-		if (isUsernameUnique(username) && isPasswordValid(password)) {
-			Some(createNewAccount(username, password))
+	def newAccount(username: String, password: String): Either[Account, String] = {
+		if (isUsernameUnique(username)) {
+			if (isPasswordValid(password)) {
+				Left(createNewAccount(username, password))
+			}
+			else {
+				Right("invalid password.")
+			}
 		}
 		else {
-			None
+			Right("that username is already taken.")
 		}
 	}
 
