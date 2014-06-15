@@ -1,0 +1,9 @@
+{
+    "id": "chat",
+    "paths": "../app/assets/javascripts",
+    "inputs": "../app/assets/javascripts/chat.js",
+    "externs": "../app/assets/javascripts/externs/jquery-1-10-2.js",
+    "mode": "SIMPLE",
+    "level": "VERBOSE",
+    "output-wrapper": "(function(){%output%})();"
+}

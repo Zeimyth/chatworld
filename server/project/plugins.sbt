@@ -6,3 +6,6 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.1")
+
+// Plovr plugin for Play/Closure happiness
+addSbtPlugin("com.benmccann" % "play-plovr-plugin" % "0.5")
